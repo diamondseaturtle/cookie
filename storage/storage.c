@@ -102,7 +102,9 @@ bool load_pantry(pantry* pantry) {
 }
 
 bool save_pantry(pantry* pantry) {
-    return false;
+
+    free(pantry->items);
+    return true;
 }
 
 int main(int argc, char* argv[]) {
