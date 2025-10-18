@@ -41,11 +41,6 @@ typedef struct recipe {
     char name[MAX_DISPLAY]; 
 } recipe;
 
-typedef struct archive {
-    int size; 
-    recipe* recipes;
-} archive;
-
 void myerror(const char* name, const char* fmt, ...) {
     va_list args;
     va_start(args, fmt);
@@ -66,21 +61,30 @@ void debug(const char* name, const char* fmt, ...) {
     }
 }
 
-bool load_pantry(pantry* pantry) {
-    FILE* file = fopen(NUTRITION_DB, "r");
+FILE* read_base(char* filename) {
+    FILE* file = fopen(filename, "r");
     if (!file) {
-        file = fopen(NUTRITION_DB, "w"); 
+        file = fopen(filename, "w"); 
         if (!file) {
             myerror(__func__, "file cannot be created");
-            return false; 
+            return NULL;
         }
         fprintf(file, "0\n");
-        fclose(file); // TODO: this is really stupid permission handling
-        file = fopen(NUTRITION_DB, "r");
+        fclose(file); 
+        file = fopen(filename, "r");
         if (!file) {
             myerror(__func__, "file cannot be opened");
-            return false;
+            return NULL;
         }
+    }
+    return file;
+}
+
+bool load_pantry(pantry* pantry) {
+    FILE* file = read_base(NUTRITION_DB); 
+    if (!file) {
+        myerror(__func__, "cannot load database");
+        return false;
     }
 
     if (fscanf(file, "%d", &pantry->size) != 1) {
